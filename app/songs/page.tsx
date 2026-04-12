@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   ArrowLeft,
   ExternalLink,
@@ -12,8 +13,13 @@ import {
   Headphones,
   ChevronDown,
   ChevronUp,
+  Plus,
+  Edit2,
+  CircleHelp,
 } from "lucide-react";
+import SongCard from "@/components/SongCard";
 import FrissonPlayer from "@/components/FrissonPlayer";
+import FrissonLetterModal from "@/components/FrissonLetterModal";
 import { isSubmissionOpen } from "@/config";
 import { supabase } from "@/lib/supabase";
 
@@ -32,6 +38,7 @@ type Song = {
 type SortType = "latest" | "oldest" | "popular";
 
 export default function SongsPage() {
+  const router = useRouter();
   const [songs, setSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [sortType, setSortType] = useState<SortType>(
@@ -41,10 +48,16 @@ export default function SongsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showLikedOnly, setShowLikedOnly] = useState(false);
   const [expandedComments, setExpandedComments] = useState<number[]>([]);
+  const [isFrissonLetterOpen, setIsFrissonLetterOpen] = useState(false);
+  const [userSong, setUserSong] = useState<Song | null>(null);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortButtonRef = useRef<HTMLButtonElement>(null);
+  const [buttonPos, setButtonPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   useEffect(() => {
     async function fetchSongs() {
       setIsLoading(true);
+      const currentNickname = sessionStorage.getItem("nickname");
 
       const { data, error } = await supabase
         .from("songs")
@@ -71,6 +84,15 @@ export default function SongsPage() {
       }));
 
       setSongs(formattedSongs);
+
+      // Check if current user has submitted a song
+      const currentUserSong = formattedSongs.find(
+        (song) => song.nickname === currentNickname
+      );
+      if (currentUserSong) {
+        setUserSong(currentUserSong);
+      }
+
       setIsLoading(false);
     }
 
@@ -81,6 +103,34 @@ export default function SongsPage() {
       setHeardSongs(JSON.parse(storedHeardSongs));
     }
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (
+        !target.closest('[data-sort-dropdown-button]') &&
+        !target.closest('[data-sort-dropdown-menu]')
+      ) {
+        setIsSortDropdownOpen(false);
+      }
+    }
+
+    if (isSortDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isSortDropdownOpen]);
+
+  useEffect(() => {
+    if (isSortDropdownOpen && sortButtonRef.current) {
+      const rect = sortButtonRef.current.getBoundingClientRect();
+      setButtonPos({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  }, [isSortDropdownOpen]);
 
   function markAsHeard(song: Song) {
     const songKey = `${song.nickname}-${song.youtubeUrl}`;
@@ -229,18 +279,23 @@ export default function SongsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#ede9fe,_#f8fafc_35%,_#e2e8f0)] text-neutral-900">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#e8f0eb,_#f7f8f6_35%,_#ede9e8)] text-neutral-900">
       <div className="mx-auto w-full max-w-7xl px-5 py-8 pb-[140px] md:px-6 md:py-10">
-        <header className="mb-8 rounded-[28px] border border-white/50 bg-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-          <div className="flex flex-col gap-6 p-6 md:p-8">
-            <div className="flex items-start justify-between gap-4">
+        <header className="mb-8 rounded-[28px] border border-white/50 bg-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl overflow-visible">
+          <div className="flex flex-col gap-6 p-6 md:p-8 overflow-visible">
+            <div className="flex items-start justify-between gap-4 overflow-visible">
               <div className="space-y-6">
-                <Link
-                  href="/"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white/80 hover:bg-white"
+                <button
+                  onClick={() => {
+                    sessionStorage.removeItem("nickname");
+                    router.push("/");
+                  }}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white/80 hover:bg-white transition"
+                  aria-label="돌아가기"
+                  type="button"
                 >
                   <ArrowLeft size={18} />
-                </Link>
+                </button>
 
                 <div>
                   <h1 className="m-0 text-4xl font-semibold tracking-tight md:text-5xl">
@@ -254,44 +309,64 @@ export default function SongsPage() {
                   </p>
                 </div>
               </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  onClick={() => setIsFrissonLetterOpen(true)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-700 shadow-sm transition hover:bg-white sm:h-11 sm:w-11"
+                  aria-label="Frisson Letter"
+                  title="Frisson Letter"
+                  type="button"
+                >
+                  <CircleHelp size={18} />
+                </button>
+
+                {isSubmissionOpen &&
+                  (userSong ? (
+                    <button
+                      onClick={() => router.push(`/submit?edit=${userSong.id}`)}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-700 shadow-sm transition hover:bg-white sm:h-11 sm:w-11"
+                      aria-label="곡 수정하기"
+                      title="곡 수정하기"
+                      type="button"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                  ) : (
+                    <Link
+                      href="/submit"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-700 shadow-sm transition hover:bg-white sm:h-11 sm:w-11"
+                      aria-label="곡 제출하기"
+                      title="곡 제출하기"
+                    >
+                      <Plus size={18} />
+                    </Link>
+                  ))}
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setSortType("latest")}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition ${
-                  sortType === "latest"
-                    ? "bg-neutral-900 text-white"
-                    : "border border-neutral-200 bg-white/80 text-neutral-700 hover:bg-white"
-                }`}
-              >
-                <Clock3 size={16} />
-                최신순
-              </button>
-
-              <button
-                onClick={() => setSortType("oldest")}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition ${
-                  sortType === "oldest"
-                    ? "bg-neutral-900 text-white"
-                    : "border border-neutral-200 bg-white/80 text-neutral-700 hover:bg-white"
-                }`}
-              >
-                <Clock3 size={16} />
-                등록순
-              </button>
-
-              <button
-                onClick={() => setSortType("popular")}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition ${
-                  sortType === "popular"
-                    ? "bg-neutral-900 text-white"
-                    : "border border-neutral-200 bg-white/80 text-neutral-700 hover:bg-white"
-                }`}
-              >
-                <Flame size={16} />
-                인기순
-              </button>
+            <div className="flex flex-wrap gap-3 items-center overflow-visible">
+              <div className="relative inline-block">
+                <button
+                  ref={sortButtonRef}
+                  data-sort-dropdown-button
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm text-neutral-700 hover:bg-white transition"
+                  type="button"
+                >
+                  {sortType === "latest"
+                    ? "최신순"
+                    : sortType === "oldest"
+                    ? "등록순"
+                    : "인기순"}
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${
+                      isSortDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              </div>
 
               <label className="inline-flex items-center gap-3 rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-sm text-neutral-700">
                 <span className="select-none">내 Frisson만</span>
@@ -301,7 +376,7 @@ export default function SongsPage() {
                   onClick={() => setShowLikedOnly((prev) => !prev)}
                   aria-pressed={showLikedOnly}
                   className={`relative h-7 w-12 rounded-full transition ${
-                    showLikedOnly ? "bg-neutral-900" : "bg-neutral-300"
+                    showLikedOnly ? "bg-emerald-600" : "bg-neutral-300"
                   }`}
                 >
                   <span
@@ -321,16 +396,62 @@ export default function SongsPage() {
           </div>
         )}
 
-        {!isLoading && sortedSongs.length === 0 && (
-          <p>
-            {showLikedOnly
-              ? "아직 Frisson한 곡이 없습니다."
-              : "아직 등록된 곡이 없습니다."}
-          </p>
+        {isSortDropdownOpen && buttonPos && (
+          <div
+            data-sort-dropdown-menu
+            className="fixed w-40 rounded-2xl border border-neutral-200 bg-white shadow-lg z-[9999]"
+            style={{
+              top: `${buttonPos.top + 8}px`,
+              left: `${buttonPos.left}px`,
+            }}
+          >
+            <button
+              onClick={() => {
+                setSortType("latest");
+                setIsSortDropdownOpen(false);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm rounded-t-2xl transition ${
+                sortType === "latest"
+                  ? "bg-neutral-100 text-neutral-900"
+                  : "text-neutral-700 hover:bg-neutral-50"
+              }`}
+              type="button"
+            >
+              최신순
+            </button>
+            <button
+              onClick={() => {
+                setSortType("oldest");
+                setIsSortDropdownOpen(false);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm transition ${
+                sortType === "oldest"
+                  ? "bg-neutral-100 text-neutral-900"
+                  : "text-neutral-700 hover:bg-neutral-50"
+              }`}
+              type="button"
+            >
+              등록순
+            </button>
+            <button
+              onClick={() => {
+                setSortType("popular");
+                setIsSortDropdownOpen(false);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm rounded-b-2xl transition ${
+                sortType === "popular"
+                  ? "bg-neutral-100 text-neutral-900"
+                  : "text-neutral-700 hover:bg-neutral-50"
+              }`}
+              type="button"
+            >
+              인기순
+            </button>
+          </div>
         )}
 
         {!isLoading && songs.length > 0 && (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 w-full max-w-6xl mx-auto lg:grid-cols-2">
             {sortedSongs.map((song, index) => {
               const isSelected =
                 selectedSong?.youtubeUrl === song.youtubeUrl &&
@@ -348,147 +469,28 @@ export default function SongsPage() {
               const hasVoted =
                 !!nickname && (song.voters ?? []).includes(nickname);
 
-              const isExpanded = expandedComments.includes(song.id);
-              const isLongComment = (song.comment ?? "").length > 70;
-
               return (
-                <article
+                <SongCard
                   key={`${song.id}-${index}`}
+                  id={song.id}
+                  title={song.title || "YouTube Video"}
+                  comment={song.comment}
+                  nickname={song.nickname}
+                  thumbnailUrl={song.thumbnailUrl}
+                  youtubeUrl={song.youtubeUrl}
+                  votes={song.votes ?? 0}
+                  isHeard={isHeard}
+                  hasVoted={hasVoted}
+                  onPlay={() => {
+                    setSelectedSong(song);
+                    markAsHeard(song);
+                  }}
+                  onVote={() => handleVote(song)}
                   onClick={() => {
                     setSelectedSong(song);
                     markAsHeard(song);
                   }}
-                  className={`group relative cursor-pointer overflow-hidden rounded-[28px] border transition-all duration-300 ${
-                    isSelected
-                      ? "border-white/70 ring-2 ring-violet-300 shadow-[0_20px_50px_rgba(109,40,217,0.18)]"
-                      : "border-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(15,23,42,0.12)]"
-                  }`}
-                >
-                  {song.thumbnailUrl ? (
-                    <>
-                      <div
-                        className="absolute inset-0 scale-[2] bg-cover bg-center"
-                        style={{
-                          backgroundImage: `url(${song.thumbnailUrl})`,
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black/45" />
-                      <div className="absolute inset-0 backdrop-blur-md" />
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-600" />
-                  )}
-
-                  <div className="relative z-10 flex min-h-[280px] flex-col justify-between p-5 text-white">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex flex-wrap gap-2">
-                        {isHeard && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-white/16 px-3 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">
-                            <Headphones size={12} />
-                            이미 들음
-                          </span>
-                        )}
-
-                        {isSelected && (
-                          <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
-                            지금 재생 중
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="rounded-full bg-white/16 px-3 py-1 text-[11px] font-medium text-white/90 backdrop-blur-sm">
-                        @{song.nickname}
-                      </div>
-                    </div>
-
-                    <div className="mt-10 space-y-3">
-                      <h2 className="line-clamp-2 text-2xl font-semibold leading-tight drop-shadow">
-                        {song.title || "YouTube Video"}
-                      </h2>
-
-                      {song.comment && (
-                        <div>
-                          <p
-                            className={`italic text-white/90 ${
-                              isExpanded ? "" : "line-clamp-2"
-                            }`}
-                          >
-                            “{song.comment}”
-                          </p>
-
-                          {isLongComment && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleComment(song.id);
-                              }}
-                              className="mt-2 inline-flex items-center gap-1 text-xs text-white/80 transition hover:text-white"
-                            >
-                              {isExpanded ? (
-                                <>
-                                  <ChevronUp size={14} />
-                                  접기
-                                </>
-                              ) : (
-                                <>
-                                  <ChevronDown size={14} />
-                                  더보기
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-6 flex items-end justify-between gap-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedSong(song);
-                            markAsHeard(song);
-                          }}
-                          className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition ${
-                            isSelected
-                              ? "border-white/30 bg-white/25 text-white"
-                              : "border-white/20 bg-white/12 text-white hover:bg-white/20"
-                          }`}
-                          aria-label={isSelected ? "재생 중" : "재생하기"}
-                        >
-                          <Play size={18} fill="currentColor" />
-                        </button>
-
-                        <a
-                          href={song.youtubeUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-white/12 text-white transition hover:bg-white/20"
-                          aria-label="유튜브 열기"
-                        >
-                          <ExternalLink size={18} />
-                        </a>
-                      </div>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleVote(song);
-                        }}
-                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium backdrop-blur-sm transition ${
-                          hasVoted
-                            ? "bg-white text-neutral-900"
-                            : "bg-white/16 text-white hover:bg-white/24"
-                        }`}
-                      >
-                        <Heart size={16} className={hasVoted ? "fill-current" : ""} />
-                        {song.votes ?? 0}
-                      </button>
-                    </div>
-                  </div>
-                </article>
+                />
               );
             })}
           </div>
@@ -508,6 +510,11 @@ export default function SongsPage() {
           </div>
         )}
       </div>
+
+      <FrissonLetterModal
+        isOpen={isFrissonLetterOpen}
+        onClose={() => setIsFrissonLetterOpen(false)}
+      />
     </main>
   );
 }
