@@ -1,0 +1,1 @@
+export const isSubmissionOpen = false; // 제출 마감 여부 설정(true: 제출 가능, false: 제출 마감!)
