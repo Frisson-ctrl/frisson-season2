@@ -192,7 +192,7 @@ export default function CassettePlayerModal({
       <div
         className="fixed inset-0 z-50 flex items-center justify-center px-4 pointer-events-none transition-all"
         style={{
-          duration: "350ms",
+          transitionDuration: "350ms",
           transitionTimingFunction: "ease-out",
         }}
       >
