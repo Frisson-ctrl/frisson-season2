@@ -51,8 +51,17 @@ export default function FrissonLetterModal({
           </p>
 
           <p>
-            처음 만들어본 웹이라 여러분의 충고와 피드백이 너무 소중합니다..! 전공자, 비전공자 상관없이
-            많은 피드백 주시면, 시즌2! 만들 때 참고할게요! 추가적인 아이디어? 너무 좋습니다!!
+            피드백이나 건의사항이 있다면 아래 오픈채팅으로 자유롭게 남겨주세요!
+          </p>
+          <p className="flex items-center justify-center">
+            <a
+              href="https://open.kakao.com/o/slhbtPli"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-lg bg-emerald-100 px-3 py-2 font-medium text-emerald-700 underline transition hover:bg-emerald-200 hover:text-emerald-900"
+            >
+              💬 KakaoTalk 오픈채팅 방문하기
+            </a>
           </p>
         </div>
       </div>

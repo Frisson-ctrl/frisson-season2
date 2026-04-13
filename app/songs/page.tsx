@@ -33,6 +33,7 @@ type Song = {
   votes?: number;
   voters?: string[];
   createdAt?: string;
+  updatedAt?: string;
 };
 
 type SortType = "latest" | "oldest" | "popular";
@@ -81,6 +82,7 @@ export default function SongsPage() {
         votes: song.votes ?? 0,
         voters: song.voters ?? [],
         createdAt: song.created_at,
+        updatedAt: song.updated_at,
       }));
 
       setSongs(formattedSongs);
@@ -232,8 +234,8 @@ export default function SongsPage() {
 
     if (sortType === "latest") {
       return copied.sort((a, b) => {
-        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
         return bTime - aTime;
       });
     }
