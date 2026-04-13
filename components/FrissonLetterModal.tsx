@@ -58,9 +58,19 @@ export default function FrissonLetterModal({
               href="https://open.kakao.com/o/slhbtPli"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block rounded-lg bg-emerald-100 px-3 py-2 font-medium text-emerald-700 underline transition hover:bg-emerald-200 hover:text-emerald-900"
+              className="text-sm font-medium text-gray-600 underline underline-offset-4 transition-colors hover:text-gray-900"
             >
-              💬 KakaoTalk 오픈채팅 방문하기
+              💬 KakaoTalk 오픈채팅방
+            </a>
+          </p>
+          <p className="flex items-center justify-center">
+            <a
+              href="https://frisson-zmq5.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-gray-600 underline underline-offset-4 transition-colors hover:text-gray-900"
+            >
+              🎧 프리송(Frisson) 시즌1
             </a>
           </p>
         </div>
