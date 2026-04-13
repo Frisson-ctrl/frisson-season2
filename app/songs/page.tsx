@@ -284,33 +284,20 @@ export default function SongsPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#e8f0eb,_#f7f8f6_35%,_#ede9e8)] text-neutral-900">
       <div className="mx-auto w-full max-w-7xl px-5 py-8 pb-[140px] md:px-6 md:py-10">
         <header className="mb-8 rounded-[28px] border border-white/50 bg-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl overflow-visible">
-          <div className="flex flex-col gap-6 p-6 md:p-8 overflow-visible">
-            <div className="flex items-start justify-between gap-4 overflow-visible">
-              <div className="space-y-6">
-                <button
-                  onClick={() => {
-                    sessionStorage.removeItem("nickname");
-                    router.push("/");
-                  }}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white/80 hover:bg-white transition"
-                  aria-label="돌아가기"
-                  type="button"
-                >
-                  <ArrowLeft size={18} />
-                </button>
-
-                <div className="w-full">
-                  <h1 className="m-0 text-4xl font-semibold tracking-tight md:text-5xl">
-                    Songs
-                  </h1>
-                  <p className="mt-2 text-sm text-neutral-500">총 {songs.length}곡</p>
-                  <p className="mt-3 w-full text-sm leading-7 text-neutral-600 md:text-base">
-                    {isSubmissionOpen
-                      ? "이번 시즌에 등록된 frisson 곡들입니다. 마음에 드는 곡을 재생하고, 전율이 오는 곡에 투표해보세요."
-                      : "이번 시즌 투표가 종료되었습니다. 가장 많은 frisson을 받은 곡들을 확인해보세요."}
-                  </p>
-                </div>
-              </div>
+          <div className="flex flex-col gap-6 p-4 sm:p-5 md:p-8 overflow-visible">
+            {/* Top Row: Back Button + Help/Edit Icons */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => {
+                  sessionStorage.removeItem("nickname");
+                  router.push("/");
+                }}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white/80 hover:bg-white transition"
+                aria-label="돌아가기"
+                type="button"
+              >
+                <ArrowLeft size={18} />
+              </button>
 
               <div className="flex shrink-0 items-center gap-2">
                 <button
@@ -345,6 +332,19 @@ export default function SongsPage() {
                     </Link>
                   ))}
               </div>
+            </div>
+
+            {/* Middle Row: Full-Width Text Content */}
+            <div className="flex flex-col gap-2">
+              <h1 className="m-0 text-4xl font-semibold tracking-tight md:text-5xl">
+                Songs
+              </h1>
+              <p className="m-0 text-sm text-neutral-500">총 {songs.length}곡</p>
+              <p className="m-0 text-sm leading-7 text-neutral-600 md:text-base">
+                {isSubmissionOpen
+                  ? "이번 시즌에 등록된 frisson 곡들입니다. 마음에 드는 곡을 재생하고, 전율이 오는 곡에 투표해보세요."
+                  : "이번 시즌 투표가 종료되었습니다. 가장 많은 frisson을 받은 곡들을 확인해보세요."}
+              </p>
             </div>
 
             <div className="flex flex-wrap gap-3 items-center overflow-visible">
