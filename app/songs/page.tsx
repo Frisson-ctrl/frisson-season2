@@ -340,7 +340,10 @@ export default function SongsPage() {
                 Songs
               </h1>
               <p className="m-0 text-sm text-neutral-500">총 {songs.length}곡</p>
-              <p className="m-0 text-sm leading-7 text-neutral-600 md:text-base">
+              <p className="m-0 mt-2 text-base font-semibold tracking-tight text-neutral-800 md:text-lg">
+                🎧 C2를 함께할, 나만의 능률 오르는 작업곡
+              </p>
+              <p className="m-0 mt-3 text-sm leading-7 text-neutral-600 md:text-base">
                 {isSubmissionOpen
                   ? "이번 시즌에 등록된 frisson 곡들입니다. 마음에 드는 곡을 재생하고, 전율이 오는 곡에 투표해보세요."
                   : "이번 시즌 투표가 종료되었습니다. 가장 많은 frisson을 받은 곡들을 확인해보세요."}

@@ -14,7 +14,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Frisson",
-  description: "Frisson Season 2",
+  applicationName: "Frisson",
+  description: "Frisson is a curated listening space for discovering and sharing songs.",
+  appleWebApp: {
+    capable: true,
+    title: "Frisson",
+  },
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

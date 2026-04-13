@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Check, ExternalLink, Music4, Send } from "lucide-react";
-import SongCard from "@/components/SongCard";
+import { ArrowLeft, Music4, Send } from "lucide-react";
 import { isSubmissionOpen } from "@/config";
 import { supabase } from "@/lib/supabase";
 
@@ -46,27 +45,16 @@ async function getYouTubeTitle(url: string) {
   }
 }
 
-type SubmittedSong = {
-  id?: number;
-  nickname: string;
-  youtubeUrl: string;
-  comment: string;
-  thumbnailUrl: string;
-  title: string;
-};
-
 export default function SubmitClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [nickname, setNickname] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [comment, setComment] = useState("");
-  const [submittedSong, setSubmittedSong] = useState<SubmittedSong | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editSongId, setEditSongId] = useState<number | null>(null);
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [originalComment, setOriginalComment] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
@@ -104,15 +92,6 @@ export default function SubmitClient() {
         // Load existing song data
         setYoutubeUrl(existingSong.youtube_url);
         setComment(existingSong.comment);
-        setOriginalComment(existingSong.comment);
-        setSubmittedSong({
-          id: existingSong.id,
-          nickname: existingSong.nickname,
-          youtubeUrl: existingSong.youtube_url,
-          comment: existingSong.comment,
-          thumbnailUrl: existingSong.thumbnail_url ?? "",
-          title: existingSong.title ?? "",
-        });
       }
 
       setIsPageLoading(false);
@@ -265,17 +244,10 @@ export default function SubmitClient() {
 
         console.log("Song insert successful:", insertData[0]);
 
-        setSubmittedSong({
-          nickname,
-          youtubeUrl,
-          comment,
-          thumbnailUrl,
-          title,
-        });
-
         setYoutubeUrl("");
         setComment("");
         alert("곡이 성공적으로 등록되었습니다.");
+        router.push("/songs");
       }
     } catch (error) {
       console.error("Unexpected error in performSubmit:", {
@@ -303,7 +275,11 @@ export default function SubmitClient() {
               이번 시즌 제출이 마감되었습니다
             </h1>
 
-            <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-neutral-600 md:text-base">
+            <p className="mx-auto mt-3 max-w-lg text-base font-semibold tracking-tight text-neutral-800 md:text-lg">
+              🎧 C2를 함께할, 나만의 능률 오르는 작업곡
+            </p>
+
+            <p className="mx-auto mt-5 max-w-lg text-sm leading-7 text-neutral-600 md:text-base">
               현재는 새로운 곡을 제출할 수 없습니다.
               <br />
               곡 목록에서 이번 시즌의 frisson 곡들을 감상해보세요.
@@ -334,11 +310,8 @@ export default function SubmitClient() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#e8f0eb,_#f7f8f6_35%,_#ede9e8)] px-5 py-10">
-      <div className="mx-auto max-w-5xl">
-        <div className={`grid gap-6 ${isEditMode ? "" : "lg:grid-cols-[1.05fr_0.95fr]"}`}>
-          <section className={`rounded-[32px] border border-white/50 bg-white/65 p-5 shadow-[0_20px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-7 md:p-8 ${
-            isEditMode ? "mx-auto w-full max-w-2xl" : ""
-          }`}>
+      <div className="mx-auto max-w-2xl">
+        <section className="rounded-[32px] border border-white/50 bg-white/65 p-5 shadow-[0_20px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-7 md:p-8">
             <div className="mb-6 flex items-start justify-between gap-4 sm:mb-8">
               <div className="space-y-4 sm:space-y-6">
                 <button
@@ -353,7 +326,10 @@ export default function SubmitClient() {
                   <h1 className="m-0 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
                     {isEditMode ? "곡 수정하기" : "곡 제출하기"}
                   </h1>
-                  <p className="mt-3 text-sm leading-7 text-neutral-600 md:text-base">
+                  <p className="mt-3 text-base font-semibold tracking-tight text-neutral-800 md:text-lg">
+                    🎧 C2를 함께할, 나만의 능률 오르는 작업곡
+                  </p>
+                  <p className="mt-5 text-sm leading-7 text-neutral-600 md:text-base">
                     @{nickname} 님
                     {isEditMode ? "의 곡을 수정하세요." : "의 frisson 곡을 등록하세요."}
                     {!isEditMode && (
@@ -431,64 +407,6 @@ export default function SubmitClient() {
               </button>
             </div>
           </section>
-
-          {!isEditMode && (
-            <aside className="rounded-[32px] border border-white/50 bg-white/65 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl md:p-7">
-              <div className="mb-5">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white/80 px-3 py-1.5 text-xs text-neutral-600">
-                  <Music4 size={14} />
-                  미리보기
-                </div>
-
-                <h2 className="m-0 text-xl font-semibold text-neutral-900">
-                  제출 미리보기
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-neutral-600">
-                  등록이 완료되면 이런 느낌으로 보여집니다.
-                </p>
-              </div>
-
-              {youtubeUrl || submittedSong?.thumbnailUrl ? (
-                <div className="mb-4 flex flex-col gap-4">
-                  <SongCard
-                    title={submittedSong?.title || "유튜브 제목을 불러오면 여기에 표시됩니다."}
-                    comment={submittedSong?.comment || comment}
-                    nickname={submittedSong?.nickname || nickname || "nickname"}
-                    thumbnailUrl={submittedSong?.thumbnailUrl}
-                    youtubeUrl={submittedSong?.youtubeUrl || youtubeUrl}
-                    votes={0}
-                    isHeard={false}
-                    hasVoted={false}
-                  />
-                  {submittedSong && (
-                    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/30 p-3 backdrop-blur-md">
-                      <div className="text-xs text-neutral-600">
-                        제출 후 곡 목록에서 카드 형태로 표시됩니다.
-                      </div>
-                      <a
-                        href={submittedSong.youtubeUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/30 bg-white/40 text-neutral-700 transition hover:bg-white/60"
-                        aria-label="유튜브 링크 열기"
-                      >
-                        <ExternalLink size={16} />
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-[28px] bg-gradient-to-br from-neutral-800 to-neutral-700 p-6 text-center text-sm leading-6 text-white/70" style={{ aspectRatio: "8 / 5" }}>
-                  <div className="flex h-full items-center justify-center">
-                    유튜브 링크를 입력하면
-                    <br />
-                    썸네일 기반 카드 느낌을 미리 볼 수 있습니다.
-                  </div>
-                </div>
-              )}
-            </aside>
-          )}
-        </div>
       </div>
 
       {showConfirmModal && (
