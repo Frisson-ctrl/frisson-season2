@@ -66,7 +66,7 @@ export default function SongCard({
       {/* Foreground content layer */}
       <div className="relative z-10 h-full w-full flex flex-col justify-between p-6">
         {/* Top section - badges */}
-        <div className="flex items-start justify-between gap-3">
+        <div className="w-full flex items-start justify-between gap-3">
           {/* Listened badge */}
           <div>
             {isHeard && (
@@ -83,8 +83,8 @@ export default function SongCard({
           </div>
         </div>
 
-        {/* Middle section - title and comment (left-aligned for horizontal layout) */}
-        <div className="flex flex-col gap-1.5 max-w-[65%]">
+        {/* Middle section - title and comment */}
+        <div className="w-full min-w-0 flex flex-col gap-1.5">
           {/* Title */}
           <h3 className="font-bold text-lg text-white line-clamp-2 leading-snug drop-shadow-lg">
             {title || "YouTube Video"}
@@ -99,7 +99,7 @@ export default function SongCard({
         </div>
 
         {/* Bottom section - buttons and votes */}
-        <div className="flex items-end justify-between gap-3">
+        <div className="w-full flex items-end justify-between gap-3">
           {/* Action buttons - left */}
           <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             <button
