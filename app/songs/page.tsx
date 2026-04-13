@@ -299,12 +299,12 @@ export default function SongsPage() {
                   <ArrowLeft size={18} />
                 </button>
 
-                <div>
+                <div className="w-full">
                   <h1 className="m-0 text-4xl font-semibold tracking-tight md:text-5xl">
                     Songs
                   </h1>
                   <p className="mt-2 text-sm text-neutral-500">총 {songs.length}곡</p>
-                  <p className="mt-3 max-w-2xl text-sm leading-7 text-neutral-600 md:text-base">
+                  <p className="mt-3 w-full text-sm leading-7 text-neutral-600 md:text-base">
                     {isSubmissionOpen
                       ? "이번 시즌에 등록된 frisson 곡들입니다. 마음에 드는 곡을 재생하고, 전율이 오는 곡에 투표해보세요."
                       : "이번 시즌 투표가 종료되었습니다. 가장 많은 frisson을 받은 곡들을 확인해보세요."}
