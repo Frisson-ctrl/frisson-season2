@@ -44,7 +44,7 @@ export default function SongCard({
   return (
     <div
       onClick={onClick}
-      className="group relative overflow-hidden rounded-[28px] cursor-pointer transition-all duration-300 shadow-[0_18px_45px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_55px_rgba(15,23,42,0.16)]"
+      className="group relative min-h-[13rem] sm:min-h-0 overflow-hidden rounded-[28px] cursor-pointer transition-all duration-300 shadow-[0_18px_45px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_55px_rgba(15,23,42,0.16)]"
       style={{ aspectRatio: "8 / 5" }}
     >
       {/* Full-cover blurred background image layer */}
@@ -92,7 +92,7 @@ export default function SongCard({
 
           {/* Comment */}
           {comment && (
-            <p className="text-xs text-white/85 line-clamp-3 italic font-light drop-shadow-md">
+            <p className="mb-1.5 text-xs text-white/85 line-clamp-3 italic font-light drop-shadow-md">
               "{comment}"
             </p>
           )}
