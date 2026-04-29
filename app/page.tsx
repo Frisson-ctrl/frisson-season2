@@ -48,7 +48,7 @@ export default function Home() {
           </div>
 
           <p className="m-0 text-sm leading-6 text-neutral-600">
-            한 사람당 한 곡. 지금 떠오르는 가장 강한 한 곡을 남겨주세요.
+            시즌2는 마감되었습니다. 남겨진 곡과 코멘트를 아카이브에서 다시 감상해보세요.
           </p>
 
           <input

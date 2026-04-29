@@ -3,22 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import YouTube, { YouTubeEvent, YouTubeProps } from "react-youtube";
 import { ExternalLink, Pause, Play, X } from "lucide-react";
-
-type Song = {
-  nickname: string;
-  youtubeUrl: string;
-  comment: string;
-  thumbnailUrl: string;
-  title?: string;
-  votes?: number;
-  voters?: string[];
-};
+import type { Song } from "@/types/song";
 
 type FrissonPlayerProps = {
   song: Song | null;
   onClose: () => void;
   onNext: () => void;
   hasNextSong: boolean;
+};
+
+type YouTubePlayerInstance = {
+  getPlayerState: () => number;
+  pauseVideo: () => void;
+  playVideo: () => void;
+  stopVideo: () => void;
 };
 
 function getYouTubeVideoId(url: string) {
@@ -45,18 +43,17 @@ export default function FrissonPlayer({
   onNext,
   hasNextSong,
 }: FrissonPlayerProps) {
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const isTransitioningRef = useRef(false);
   const isClosingRef = useRef(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const videoId = song ? getYouTubeVideoId(song.youtubeUrl) : "";
+  const videoId = song ? getYouTubeVideoId(song.youtube_url) : "";
 
   useEffect(() => {
     isTransitioningRef.current = false;
     isClosingRef.current = false;
-    setIsPlaying(false);
 
     return () => {
       isClosingRef.current = true;
@@ -72,7 +69,7 @@ export default function FrissonPlayer({
   }, [videoId]);
 
   function handleReady(event: YouTubeEvent) {
-    playerRef.current = event.target;
+    playerRef.current = event.target as YouTubePlayerInstance;
     isTransitioningRef.current = false;
     isClosingRef.current = false;
     setIsPlaying(true);
@@ -165,10 +162,10 @@ export default function FrissonPlayer({
       <div className="pointer-events-none absolute inset-0 bg-white/20" />
 
       <div className="relative z-10 flex items-center gap-3 p-3">
-        {song.thumbnailUrl ? (
+        {song.thumbnail_url ? (
           <div className="h-14 w-14 overflow-hidden rounded-2xl">
             <img
-              src={song.thumbnailUrl}
+              src={song.thumbnail_url}
               alt="현재 재생 중인 곡 썸네일"
               className="h-full w-full object-cover object-center scale-150"
             />
@@ -198,7 +195,7 @@ export default function FrissonPlayer({
         </button>
 
         <a
-          href={song.youtubeUrl}
+          href={song.youtube_url}
           target="_blank"
           rel="noreferrer"
           className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/40 bg-white/50 text-neutral-700 transition hover:bg-white/70"

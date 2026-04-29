@@ -3,7 +3,7 @@
 import { ExternalLink, Heart, Play, Headphones } from "lucide-react";
 
 type SongCardProps = {
-  id?: number;
+  id?: string;
   title: string;
   comment?: string;
   nickname: string;
@@ -18,7 +18,6 @@ type SongCardProps = {
 };
 
 export default function SongCard({
-  id,
   title,
   comment,
   nickname,
@@ -34,11 +33,6 @@ export default function SongCard({
   function handlePlayClick(e: React.MouseEvent) {
     e.stopPropagation();
     onPlay?.();
-  }
-
-  function handleVoteClick(e: React.MouseEvent) {
-    e.stopPropagation();
-    onVote?.();
   }
 
   return (
@@ -93,7 +87,7 @@ export default function SongCard({
           {/* Comment */}
           {comment && (
             <p className="mb-1.5 text-xs text-white/85 line-clamp-3 italic font-light drop-shadow-md">
-              "{comment}"
+              &ldquo;{comment}&rdquo;
             </p>
           )}
         </div>
@@ -122,12 +116,15 @@ export default function SongCard({
           </div>
 
           {/* Vote pill - right */}
-          <button
-            onClick={handleVoteClick}
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onVote?.();
+            }}
             className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition backdrop-blur-md border whitespace-nowrap ${
               hasVoted
                 ? "bg-red-400/60 border-red-300/50 text-white shadow-lg"
-                : "bg-white/30 border-white/40 text-white hover:bg-white/50 shadow-lg"
+                : "bg-white/30 border-white/40 text-white shadow-lg"
             }`}
             aria-label="투표하기"
           >
@@ -136,7 +133,7 @@ export default function SongCard({
               className={hasVoted ? "fill-current" : ""}
             />
             {votes}
-          </button>
+          </div>
         </div>
       </div>
 

@@ -22,6 +22,13 @@ type CassettePlayerModalProps = {
   hasNextSong: boolean;
 };
 
+type YouTubePlayerInstance = {
+  getPlayerState: () => number;
+  pauseVideo: () => void;
+  playVideo: () => void;
+  stopVideo: () => void;
+};
+
 function getYouTubeVideoId(url: string) {
   try {
     const parsedUrl = new URL(url);
@@ -46,23 +53,17 @@ export default function CassettePlayerModal({
   onNext,
   hasNextSong,
 }: CassettePlayerModalProps) {
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const isTransitioningRef = useRef(false);
   const isClosingRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
+  const [isAnimatingIn, setIsAnimatingIn] = useState(true);
 
   const videoId = song ? getYouTubeVideoId(song.youtubeUrl) : "";
-
-  // Trigger animation on mount
-  useEffect(() => {
-    setIsAnimatingIn(true);
-  }, []);
 
   useEffect(() => {
     isTransitioningRef.current = false;
     isClosingRef.current = false;
-    setIsPlaying(false);
 
     return () => {
       isClosingRef.current = true;
@@ -78,7 +79,7 @@ export default function CassettePlayerModal({
   }, [videoId]);
 
   function handleReady(event: YouTubeEvent) {
-    playerRef.current = event.target;
+    playerRef.current = event.target as YouTubePlayerInstance;
     isTransitioningRef.current = false;
     isClosingRef.current = false;
     setIsPlaying(true);
